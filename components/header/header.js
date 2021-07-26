@@ -129,6 +129,11 @@ function Header(props) {
 
   };
 
+  const switchProvider = () =>{
+    setUnlockOpen(true);
+
+  }
+
   const closeUnlock = () => {
     setUnlockOpen(false);
   };
@@ -199,12 +204,13 @@ function Header(props) {
           <Typography className={classes.headBtnTxt}>{account && account.address ? formatAddress(account.address) : 'Connect Wallet'}</Typography>
         </Button> */}
 
-        <div className={classes.usermenutest}>
+        {/* <div  className={classes.accountButton}> */}
         <UserMenu 
         loginClicked={onAddressClicked}
         account={account}
+        switchProvider={switchProvider}
         />
-        </div>
+        {/* </div> */}
 
         {unlockOpen && <Unlock modalOpen={unlockOpen} closeModal={closeUnlock} />}
         {toggleAboutModal && <AboutModal setToggleAboutModal={setToggleAboutModal} />}

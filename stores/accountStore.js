@@ -92,6 +92,7 @@ class Store {
     this.getGasPrices();
     this.getCurrentBlock();
     injected.isAuthorized().then((isAuthorized) => {
+      console.log('not connected');
       const { supportedChainIds } = injected;
       // fall back to ethereum mainnet if chainId undefined
       const { chainId = 1 } = window.ethereum || {};
@@ -106,6 +107,10 @@ class Store {
               account: { address: a.account },
               web3context: { library: { provider: a.provider } },
             });
+            // console.log('provier found. ',a.provider);
+            // console.log('account found. ',a.account);
+            // console.log('account store', this.store)
+            // console.log('----------------------------');
             this.emitter.emit(ACCOUNT_CONFIGURED);
 
             this.dispatcher.dispatch({
@@ -155,6 +160,12 @@ class Store {
       }
     });
 
+    console.log('content not connected');
+    this.dispatcher.dispatch({
+      type: CONFIGURE_VAULTS,
+      content: { connected: false },
+    });
+
     if (window.ethereum) {
       this.updateAccount();
     } else {
@@ -165,9 +176,34 @@ class Store {
     }
   };
 
+
+  disconnectAccount = async (connection ,discR) =>{    //connection - string hex , disR = 'all' , 'wallet'
+    const that = this;
+    // const account = this.getStore('account');
+    // if (!account) {
+    //   return false;
+    //   //maybe throw an error
+    // }
+
+    // const web3 =  this.getWeb3Provider();
+    // if (!web3) {
+    //   return false;
+    //   //maybe throw an error
+    // }
+console.log("------", this.store.web3context, web3 );
+this.store.web3context.deactivate()
+this.stores.accountStore.setStore({ account: {}, web3context: null });
+
+// .account.wallet.remove(account).then((x)=>{
+    // console.log(x);
+  // })
+    
+  }
+
   updateAccount = () => {
     const that = this;
     const res = window.ethereum.on('accountsChanged', function (accounts) {
+      console.log('account change updated. ',accounts);
       that.setStore({
         account: { address: accounts[0] },
         web3context: { library: { provider: window.ethereum } },
@@ -198,6 +234,15 @@ class Store {
 
       that.emitter.emit(ACCOUNT_CHANGED);
     });
+
+    window.ethereum.on('disconnect', function(error) {
+      console.log('error', error);
+      console.log("disconnect error");
+      
+    })
+
+
+
   };
 
   getBalances = async (payload) => {

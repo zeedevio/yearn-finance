@@ -1,5 +1,5 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import { withStyles, withTheme } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 // Customisation
 import Grid from '@material-ui/core/Grid';
@@ -24,9 +24,7 @@ import { formatAddress } from '../../utils';
 import { Web3ReactProvider, useWeb3React } from "@web3-react/core";
 
 import stores from '../../stores';
-import {
-  CONNECTION_DISCONNECTED,
-} from "../../stores/constants";
+
 import classes from './userMenu.module.css';
 
 const StyledMenu = withStyles({
@@ -67,9 +65,9 @@ const StyledMenuItem = withStyles((theme) => ({
   },
 }))(MenuItem);
 
-export default function CustomizedMenus(props) {
+function CustomizedMenus(props) {
 
-  const { loginClicked, account } = props;
+  const { loginClicked, account, switchProvider } = props;
 
 
   const context = useWeb3React();
@@ -90,13 +88,35 @@ export default function CustomizedMenus(props) {
     }
   };
 
-  const disconnectWallet = () => {
-    if (connector && connector.close) {
-      connector.close();
-    }
+  const switchP = () => {
+    switchProvider()
+  }
 
+  const disconnectWallet = async () => {
+    // console.log(connector);
+    // if (connector && connector.close) {
+    //   connector.close();
+    // }
+    // const account = this.getStore('account');
+    // if (!account) {
+    //   return false;
+    //   //maybe throw an error
+    // }
+
+    // const web3 = await this.getWeb3Provider();
+    // if (!web3) {
+    //   return false;
+    //   //maybe throw an error
+    // }
+console.log("------", account, web3 );
+ let res =await this.store.web3context.deactivate()
+return res
+web3().wallet.remove(account).then((x)=>{
+  console.log(x);
+})
+    // console.log(stores.accountStore.store.connectorsByName['MetaMask'].handleClose());
     stores.accountStore.setStore({ account: {}, web3context: null });
-    stores.emitter.emit(CONNECTION_DISCONNECTED);
+    // stores.emitter.emit(CONNECTION_DISCONNECTED);
   };
 
   const handleClose = () => {
@@ -105,8 +125,11 @@ export default function CustomizedMenus(props) {
 
   return (
     <div className={classes.root}>
-      <Button disableElevation className={classes.userBtn} aria-controls="user-menu" aria-haspopup="true" variant="contained" onClick={handleClick}>
-        {account && account.address ? formatAddress(account.address) : 'Connect Wallet'}
+      <Button disableElevation      className={classes.accountButton}
+          variant="contained"
+          color={props.theme.palette.type === 'dark' ? 'primary' : 'secondary'} aria-controls="user-menu" aria-haspopup="true"  onClick={handleClick}>
+            {account && account.address && <div className={`${classes.accountIcon} ${classes.metamask}`}></div>}
+            <Typography className={classes.headBtnTxt}>{account && account.address ? formatAddress(account.address) : 'Connect Wallet'}</Typography>
       </Button>
       <StyledMenu className={classes.usermenu} id="user-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
         <div className={classes.menuheader}>
@@ -137,18 +160,18 @@ export default function CustomizedMenus(props) {
             </Grid>
           </Grid>
         </div>
-        <StyledMenuItem className={classes.userMenuItem}>
+        <StyledMenuItem className={classes.userMenuItem}  onClick={switchP}>
           <ListItemIcon>
             <SwapHorizOutlinedIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Switch Wallet Provider" />
         </StyledMenuItem>
-        <StyledMenuItem className={classes.userMenuItem}>
+        {/* <StyledMenuItem className={classes.userMenuItem}>
           <ListItemIcon>
             <AccountBalanceWalletOutlinedIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Manage Addresses" />
-        </StyledMenuItem>
+        </StyledMenuItem> */}
         <StyledMenuItem className={classes.userMenuItem} onClick={disconnectWallet}>
           <ListItemIcon>
             <ExitToAppIcon fontSize="small" />
@@ -159,3 +182,4 @@ export default function CustomizedMenus(props) {
     </div>
   );
 }
+export default  withTheme(CustomizedMenus)

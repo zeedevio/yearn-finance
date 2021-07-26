@@ -160,15 +160,13 @@ function onConnectionClicked(
   activate(connectorsByName[name]);
 }
 
-function onDeactivateClicked(deactivate, connector) {
-  if (deactivate) {
-    deactivate();
-  }
-  if (connector && connector.close) {
-    connector.close();
-  }
-  stores.accountStore.setStore({ account: {}, web3context: null });
-  stores.emitter.emit(CONNECTION_DISCONNECTED);
+function  onDeactivateClicked(deactivate, connector, name) { // deactivate - boolean, connector- current connector, name - name of connector clicked 
+  console.log('info for disconnecting connector', deactivate, connector, name);
+ connector.handleClose();
+ stores.accountStore.setStore({ account: {}, web3context: null });
+  // stores.accountStore.disconnectAccount(stores.accountStore.store.account['address']);
+  // stores.accountStore.setStore({ account: {}, web3context: null });
+  // stores.emitter.emit(CONNECTION_DISCONNECTED);
 }
 
 function MyComponent(props) {
@@ -321,6 +319,7 @@ function MyComponent(props) {
                   <CircularProgress size={15} style={{ marginRight: "10px" }} />
                 )}
                 {!activating && connected && (
+                  <>
                   <div
                     style={{
                       background: "#4caf50",
@@ -333,6 +332,20 @@ function MyComponent(props) {
                       right: "15px"
                     }}
                   ></div>
+                  <Button
+                  style={{
+                    background: "#4ce",
+                    borderRadius: "10px",
+                    width: "10px",
+                    height: "10px",
+                    marginRight: "0px",
+                    position: "absolute",
+                    top: "15px",
+                    right: "15px"
+                  }}
+                  onClick={() =>{onDeactivateClicked(true,currentConnector, name)}}
+                >Disconnect</Button>
+                </>
                 )}
               </div>
             </Button>
