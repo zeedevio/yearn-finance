@@ -161,9 +161,11 @@ function onConnectionClicked(
 }
 
 function  onDeactivateClicked(deactivate, connector, name) { // deactivate - boolean, connector- current connector, name - name of connector clicked 
-  console.log('info for disconnecting connector', deactivate, connector, name);
+  console.log('info for disconnecting connector',stores,'----', deactivate, connector, name);
  connector.handleClose();
- stores.accountStore.setStore({ account: {}, web3context: null });
+ connector.deactivate();
+ stores.accountStore.disconnectAccount(stores.accountStore.store.account.address)
+//  stores.accountStore.setStore({ account: {}, web3context: null });
   // stores.accountStore.disconnectAccount(stores.accountStore.store.account['address']);
   // stores.accountStore.setStore({ account: {}, web3context: null });
   // stores.emitter.emit(CONNECTION_DISCONNECTED);

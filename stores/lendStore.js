@@ -116,7 +116,8 @@ class Store {
     const blocksPeryear = 2425846;
     const defaultValues = lendJSON;
     const account = await stores.accountStore.getStore('account');
-    if (!account) {
+    console.log(account);
+    if (!account && acount.address.length > 0) {
       return null;
     }
 

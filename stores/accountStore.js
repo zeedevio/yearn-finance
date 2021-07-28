@@ -64,6 +64,7 @@ class Store {
 
     dispatcher.register(
       function (payload) {
+        console.log('running, payload info here ---->', payload)
         switch (payload.type) {
           case CONFIGURE:
             this.configure(payload);
@@ -91,18 +92,20 @@ class Store {
   configure = async () => {
     this.getGasPrices();
     this.getCurrentBlock();
-    injected.isAuthorized().then((isAuthorized) => {
-      console.log('not connected');
+     injected.isAuthorized().then((isAuthorized) => {
+      console.log('connected', isAuthorized);
+      console.log('injected contract=', injected)
       const { supportedChainIds } = injected;
       // fall back to ethereum mainnet if chainId undefined
       const { chainId = 1 } = window.ethereum || {};
       const parsedChainId = parseInt(chainId, 16);
       const isChainSupported = supportedChainIds.includes(parsedChainId);
-
+      console.log('isAuth- ', isAuthorized, 'issupportchain', isChainSupported);
       if (isAuthorized && isChainSupported) {
         injected
           .activate()
           .then((a) => {
+            console.log('account info',a);
             this.setStore({
               account: { address: a.account },
               web3context: { library: { provider: a.provider } },
@@ -145,7 +148,8 @@ class Store {
           });
       } else {
         //we can ignore if not authorized.
-        this.emitter.emit(ACCOUNT_CONFIGURED);
+
+         this.emitter.emit(ACCOUNT_CONFIGURED);
         this.emitter.emit(LENDING_CONFIGURED);
         this.emitter.emit(CDP_CONFIGURED);
 
@@ -157,14 +161,15 @@ class Store {
         if (!isChainSupported) {
           this.setStore({ chainInvalid: true });
         }
+
       }
     });
 
-    console.log('content not connected');
-    this.dispatcher.dispatch({
-      type: CONFIGURE_VAULTS,
-      content: { connected: false },
-    });
+    // console.log('content not connected');
+    // this.dispatcher.dispatch({
+    //   type: CONFIGURE_VAULTS,
+    //   content: { connected: false },
+    // });
 
     if (window.ethereum) {
       this.updateAccount();
@@ -177,7 +182,7 @@ class Store {
   };
 
 
-  disconnectAccount = async (connection ,discR) =>{    //connection - string hex , disR = 'all' , 'wallet'
+  disconnectAccount = async (add) =>{    //connection - string hex , disR = 'all' , 'wallet'
     const that = this;
     // const account = this.getStore('account');
     // if (!account) {
@@ -186,23 +191,43 @@ class Store {
     // }
 
     // const web3 =  this.getWeb3Provider();
-    // if (!web3) {
+    // if (!web3) {  thank you Zee,  making me realise who i really am, and through the grace of God he chose you too show me the way , very much appriciated . love Zunaid. 
     //   return false;
     //   //maybe throw an error
     // }
-console.log("------", this.store.web3context, web3 );
-this.store.web3context.deactivate()
-this.stores.accountStore.setStore({ account: {}, web3context: null });
+console.log('injected',injected,add,"------", this.store.web3context, web3 );
 
-// .account.wallet.remove(account).then((x)=>{
-    // console.log(x);
-  // })
-    
+console.log('removing account');
+
+ injected.deactivate()
+// this.store.web3context.deactivate();
+injected.handleClose();
+this.setStore({ account: null, web3context: null });
+
+this.dispatcher.dispatch({
+  type: CONFIGURE_VAULTS,
+  content: { connected: false },
+});
+
+this.setStore({ chainInvalid: true });
+
+window.removeEventListener('ethereum#initialized', this.updateAccount);
+window.addEventListener('ethereum#initialized', this.updateAccount, {
+  once: true,
+});
+
+
+this.emitter.emit(ACCOUNT_CONFIGURED);
+this.emitter.emit(LENDING_CONFIGURED);
+this.emitter.emit(CDP_CONFIGURED);
+
+
+
   }
 
   updateAccount = () => {
     const that = this;
-    const res = window.ethereum.on('accountsChanged', function (accounts) {
+   window.ethereum.on('accountsChanged', function (accounts) {
       console.log('account change updated. ',accounts);
       that.setStore({
         account: { address: accounts[0] },
@@ -229,17 +254,12 @@ this.stores.accountStore.setStore({ account: {}, web3context: null });
       const supportedChainIds = [1];
       const parsedChainId = parseInt(chainId, 16);
       const isChainSupported = supportedChainIds.includes(parsedChainId);
-      console.log(chainId);
+      console.log('changes requested',chainId);
       that.setStore({ chainInvalid: !isChainSupported });
 
       that.emitter.emit(ACCOUNT_CHANGED);
     });
 
-    window.ethereum.on('disconnect', function(error) {
-      console.log('error', error);
-      console.log("disconnect error");
-      
-    })
 
 
 

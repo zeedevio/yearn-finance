@@ -75,9 +75,10 @@ const StyledSwitch = withStyles((theme) => ({
 });
 
 function Header(props) {
-  console.log(stores.accountStore);
+  // console.log(stores.accountStore);
   const accountStore = stores.accountStore.getStore('account');
-
+//   const web3context = stores.accountStore.getStore('web3context');
+// console.log(web3context);
   const [account, setAccount] = useState(accountStore);
   const [toggleAboutModal, setToggleAboutModal] = useState(false);
   const [toggleSearchModal, setToggleSearchModal] = useState(false);

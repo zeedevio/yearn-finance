@@ -92,31 +92,11 @@ function CustomizedMenus(props) {
     switchProvider()
   }
 
-  const disconnectWallet = async () => {
-    // console.log(connector);
-    // if (connector && connector.close) {
-    //   connector.close();
-    // }
-    // const account = this.getStore('account');
-    // if (!account) {
-    //   return false;
-    //   //maybe throw an error
-    // }
+  const disconnectWallet = () => {
+  // console.log('account store in user menu');
+    // console.log(stores.accountStore, '---ad: ', stores.accountStore.store.account.address);
+    stores.accountStore.disconnectAccount(stores.accountStore.store.account.address);
 
-    // const web3 = await this.getWeb3Provider();
-    // if (!web3) {
-    //   return false;
-    //   //maybe throw an error
-    // }
-console.log("------", account, web3 );
- let res =await this.store.web3context.deactivate()
-return res
-web3().wallet.remove(account).then((x)=>{
-  console.log(x);
-})
-    // console.log(stores.accountStore.store.connectorsByName['MetaMask'].handleClose());
-    stores.accountStore.setStore({ account: {}, web3context: null });
-    // stores.emitter.emit(CONNECTION_DISCONNECTED);
   };
 
   const handleClose = () => {
