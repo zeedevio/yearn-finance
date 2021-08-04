@@ -1,4 +1,4 @@
-import AccountStore from './accountStore';
+import AccountStore from './account';
 import InvestStore from './investStore';
 import CoverStore from './coverStore';
 import LendStore from './lendStore';

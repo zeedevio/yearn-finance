@@ -124,7 +124,9 @@ function Header(props) {
 
   const onAddressClicked = () => {
     if (!(account && account.address)){
-    setUnlockOpen(true);
+    // setUnlockOpen(true);
+    props.createConnection()
+
     }
 
   };
@@ -199,11 +201,12 @@ function Header(props) {
           {account && account.address && <div className={`${classes.accountIcon} ${classes.metamask}`}></div>}
           <Typography className={classes.headBtnTxt}>{account && account.address ? formatAddress(account.address) : 'Connect Wallet'}</Typography>
         </Button> */}
-
+{props.connected ? 'yes': 'no'}
         <div className={classes.usermenutest}>
         <UserMenu 
         loginClicked={onAddressClicked}
         account={account}
+        logout={props.killSession}
         />
         </div>
 

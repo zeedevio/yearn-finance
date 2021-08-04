@@ -67,7 +67,7 @@ const StyledMenuItem = withStyles((theme) => ({
 
 function CustomizedMenus(props) {
 
-  const { loginClicked, account, switchProvider } = props;
+  const { loginClicked, account, switchProvider, logout } = props;
 
 
   const context = useWeb3React();
@@ -95,6 +95,7 @@ function CustomizedMenus(props) {
   const disconnectWallet = () => {
   // console.log('account store in user menu');
     // console.log(stores.accountStore, '---ad: ', stores.accountStore.store.account.address);
+    logout();
     stores.accountStore.disconnectAccount();
 
   };

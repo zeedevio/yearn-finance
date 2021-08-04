@@ -16,6 +16,7 @@ import {
   ACCOUNT_CHANGED,
   GET_GAS_PRICES,
   GAS_PRICES_RETURNED,
+  CONNECTION_DISCONNECTED
 } from './constants';
 
 import { ERC20ABI } from './abis';
@@ -30,6 +31,7 @@ import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
 class Store {
+  
   constructor(dispatcher, emitter) {
     this.dispatcher = dispatcher;
     this.emitter = emitter;
@@ -91,69 +93,70 @@ class Store {
   configure = async () => {
     this.getGasPrices();
     this.getCurrentBlock();
-    injected.isAuthorized().then((isAuthorized) => {
-      const { supportedChainIds } = injected;
-      // fall back to ethereum mainnet if chainId undefined
-      const { chainId = 1 } = window.ethereum || {};
-      const parsedChainId = parseInt(chainId, 16);
-      const isChainSupported = supportedChainIds.includes(parsedChainId);
-      if (!isChainSupported) {
-        this.setStore({ chainInvalid: true });
-        this.emitter.emit(ACCOUNT_CHANGED);
-      }
+    // injected.isAuthorized().then((isAuthorized) => {
+    //   const { supportedChainIds } = injected;
+    //   // fall back to ethereum mainnet if chainId undefined
+    //   const { chainId = 1 } = window.ethereum || {};
+    //   const parsedChainId = parseInt(chainId, 16);
+    //   const isChainSupported = supportedChainIds.includes(parsedChainId);
+    //   if (!isChainSupported) {
+    //     this.setStore({ chainInvalid: true });
+    //     this.emitter.emit(ACCOUNT_CHANGED);
+    //   }
 
-      if (isAuthorized && isChainSupported) {
-        injected
-          .activate()
-          .then((a) => {
-            this.setStore({
-              account: { address: a.account },
-              web3context: { library: { provider: a.provider } },
-            });
-            this.emitter.emit(ACCOUNT_CONFIGURED);
+    //   if (isAuthorized && isChainSupported) {
+    //     injected
+    //       .activate()
+    //       .then((a) => {
+    //         this.setStore({
+    //           account: { address: a.account },
+    //           web3context: { library: { provider: a.provider } },
+    //         });
+    //         this.emitter.emit(ACCOUNT_CONFIGURED);
 
-            this.dispatcher.dispatch({
-              type: CONFIGURE_VAULTS,
-              content: { connected: true },
-            });
-            this.dispatcher.dispatch({
-              type: CONFIGURE_LENDING,
-              content: { connected: true },
-            });
-            this.dispatcher.dispatch({
-              type: CONFIGURE_CDP,
-              content: { connected: true },
-            });
-          })
-          .catch((e) => {
-            this.emitter.emit(ERROR, e);
-            this.emitter.emit(ACCOUNT_CONFIGURED);
+    //         this.dispatcher.dispatch({
+    //           type: CONFIGURE_VAULTS,
+    //           content: { connected: true },
+    //         });
+    //         this.dispatcher.dispatch({
+    //           type: CONFIGURE_LENDING,
+    //           content: { connected: true },
+    //         });
+    //         this.dispatcher.dispatch({
+    //           type: CONFIGURE_CDP,
+    //           content: { connected: true },
+    //         });
+    //       })
+    //       .catch((e) => {
+    //         this.emitter.emit(ERROR, e);
+    //         this.emitter.emit(ACCOUNT_CONFIGURED);
 
-            this.dispatcher.dispatch({
-              type: CONFIGURE_VAULTS,
-              content: { connected: false },
-            });
-            this.dispatcher.dispatch({
-              type: CONFIGURE_LENDING,
-              content: { connected: false },
-            });
-            this.dispatcher.dispatch({
-              type: CONFIGURE_CDP,
-              content: { connected: false },
-            });
-          });
-      } else {
-        //we can ignore if not authorized.
-        this.emitter.emit(ACCOUNT_CONFIGURED);
-        this.emitter.emit(LENDING_CONFIGURED);
-        this.emitter.emit(CDP_CONFIGURED);
+    //         this.dispatcher.dispatch({
+    //           type: CONFIGURE_VAULTS,
+    //           content: { connected: false },
+    //         });
+    //         this.dispatcher.dispatch({
+    //           type: CONFIGURE_LENDING,
+    //           content: { connected: false },
+    //         });
+    //         this.dispatcher.dispatch({
+    //           type: CONFIGURE_CDP,
+    //           content: { connected: false },
+    //         });
+    //       });
+    //   } else {
+    //     //we can ignore if not authorized.
+    //     this.emitter.emit(ACCOUNT_CONFIGURED);
+    //     this.emitter.emit(LENDING_CONFIGURED);
+    //     this.emitter.emit(CDP_CONFIGURED);
 
-        this.dispatcher.dispatch({
-          type: CONFIGURE_VAULTS,
-          content: { connected: false },
-        });
-      }
-    });
+    //     this.dispatcher.dispatch({
+    //       type: CONFIGURE_VAULTS,
+    //       content: { connected: false },
+    //     });
+    //   }
+    // });
+
 
     if (window.ethereum) {
       this.updateAccount();
@@ -200,6 +203,19 @@ class Store {
       that.configure()
     });
   };
+
+  disconnectAccount = () =>{
+    this.emitter.emit(ACCOUNT_CONFIGURED);
+    this.emitter.emit(LENDING_CONFIGURED);
+    this.emitter.emit(CDP_CONFIGURED);
+
+    this.dispatcher.dispatch({
+      type: CONFIGURE_VAULTS,
+      content: { connected: false },
+    });
+    stores.accountStore.setStore({ account: {}, web3context: null });
+    stores.emitter.emit(CONNECTION_DISCONNECTED);
+  }
 
   getBalances = async (payload) => {
     const account = this.getStore('account');
